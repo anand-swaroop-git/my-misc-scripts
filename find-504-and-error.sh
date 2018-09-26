@@ -1,9 +1,15 @@
-for date in {23..24}
+clear
+IFS=\n
+for date in {02..04}
 do
-echo -e "Number of 504s in Access logs on $date/Sep"
-zgrep "$date/Sep/2018" /var/log/nginx/access.log.* | grep " 504 " | awk '{print $4}' | awk -F: '{print $2 " " $3}
-echo
+echo -e "\e[1;32mNumber of 504s in Access logs on $date/Sep\e[0m"
+zgrep "$date/Sep/2018" /var/log/nginx/access.log.* | grep " 504 "
+    IFS=" "
+    for times in `zgrep "$date/Sep/2018" /var/log/nginx/access.log.* | grep " 504 " | awk '{print $4}' | awk -F: '{print $2" "$3}' | tr " " ":" | tr "\n" " "`
+    do
+    echo "--------------------------------------------------------------------------------------------------------"
+    echo -e "\e[1;32mNow the error logs corresponding to the access logs 504\e[0m"
+    zgrep "2018/09/$date $times" /var/log/nginx/error.log.*
+    done
+echo "************************************************************************************************************"
 done
-
-# head -n1 access.log | awk '{print $4}' | awk -F: '{print $2 " " $3}'
-# head -n1 access.log | awk '{print $4}' | awk -F: '{print $3}'
