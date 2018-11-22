@@ -16,7 +16,7 @@
             "Type" : "AWS::EC2::SecurityGroup",
             "Properties" : {
                 "GroupName" : "My First CF Security Group",
-                "GroupDescription" : "This will allow public SSH and HTTP access from the world!",
+                "GroupDescription" : "This will allow public SSH from the world!",
                 "SecurityGroupIngress" : [ {
                     "IpProtocol" : "tcp",
                     "FromPort" : "22",
