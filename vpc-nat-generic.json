@@ -19,6 +19,46 @@
       "Default": "0.0.0.0/0",
       "AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
       "ConstraintDescription": "must be a valid CIDR range of the form x.x.x.x/x."
+    },
+    "NATInstanceType": {
+      "Description": "Choose the instance type",
+      "Type": "String",
+      "Default": "t2.micro",
+      "AllowedValues": [
+        "t2.micro",
+        "m1.small",
+        "t2.medium"
+      ]
+    },
+    "AppInstanceType": {
+      "Description": "Choose the instance type",
+      "Type": "String",
+      "Default": "t2.micro",
+      "AllowedValues": [
+        "t2.micro",
+        "m1.small",
+        "t2.medium"
+      ]
+    },
+    "DNSInstanceType": {
+      "Description": "Choose the instance type",
+      "Type": "String",
+      "Default": "t2.micro",
+      "AllowedValues": [
+        "t2.micro",
+        "m1.small",
+        "t2.medium"
+      ]
+    },
+    "ZPAInstanceType": {
+      "Description": "Choose the instance type",
+      "Type": "String",
+      "Default": "t2.micro",
+      "AllowedValues": [
+        "t2.micro",
+        "m1.small",
+        "t2.medium"
+      ]
     }
   },
   "Mappings": {
@@ -356,7 +396,9 @@
       ],
       "Type": "AWS::EC2::Instance",
       "Properties": {
-        "InstanceType": "t2.micro",
+        "InstanceType": {
+          "Ref": "NATInstanceType"
+        },
         "KeyName": {
           "Ref": "KeyPairName"
         },
@@ -391,7 +433,6 @@
             "Value": "NAT"
           }
         ]
-        
       }
     },
     "ZPAinstance": {
@@ -401,7 +442,9 @@
       ],
       "Type": "AWS::EC2::Instance",
       "Properties": {
-        "InstanceType": "t2.micro",
+        "InstanceType": {
+          "Ref": "ZPAInstanceType"
+        },
         "KeyName": {
           "Ref": "KeyPairName"
         },
@@ -516,7 +559,9 @@
       ],
       "Type": "AWS::EC2::Instance",
       "Properties": {
-        "InstanceType": "t2.micro",
+        "InstanceType": {
+          "Ref": "DNSInstanceType"
+        },
         "KeyName": {
           "Ref": "KeyPairName"
         },
@@ -552,7 +597,9 @@
       ],
       "Type": "AWS::EC2::Instance",
       "Properties": {
-        "InstanceType": "t2.micro",
+        "InstanceType": {
+          "Ref": "AppInstanceType"
+        },
         "KeyName": {
           "Ref": "KeyPairName"
         },
@@ -632,4 +679,4 @@
       }
     }
   }
-}
+} 
