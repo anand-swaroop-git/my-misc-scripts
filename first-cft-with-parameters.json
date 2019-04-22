@@ -1,0 +1,39 @@
+{
+"AWSTemplateFormatVersion" : "2010-09-09",
+"Description" : "My First EC2 Instance from CF",
+"Parameters" : {
+	"InstanceTypeParameter" : {
+       "Type" : "String",
+       "Default" : "t2.micro",
+       "AllowedValues" : ["t2.micro", "m1.small", "m1.large", "t2.medium"],
+       "Description" : "Enter t2.micro, m1.small, or m1.large. Default is t2.micro."
+        },
+    "KeyName": {
+       "Description": "Name of an existing EC2 KeyPair to enable SSH access to the instance",
+       "Type": "AWS::EC2::KeyPair::KeyName",
+       "ConstraintDescription": "Must be the name of an existing EC2 KeyPair."
+        },
+    "SecurityGroupIds": {
+		"Description": "Security groups that can be used to access the EC2 instances",
+		"Type": "List<AWS::EC2::SecurityGroup::Id>",
+        "ConstraintDescription": "Must be list of EC2 security group ids"
+        }
+},
+"Resources" : {
+    "EC2Instance" : {
+        "Type" : "AWS::EC2::Instance",
+        "Properties" : {
+            "InstanceType" : { "Ref" : "InstanceTypeParameter" },
+            "ImageId" : "ami-0a39e970b93513779",
+            "KeyName" : { "Ref" : "KeyName" },
+            "SubnetId" : "subnet-27d8076b"
+            }
+        }
+},
+"Outputs" : {
+    "PrivateIp" : {
+        "Description" : "The Private IP of the EC2 instance",
+        "Value" : { "Fn::GetAtt" : [ "EC2Instance" , "PrivateIp" ] }
+        }
+		}
+}

@@ -1,0 +1,29 @@
+{
+    "AWSTemplateFormatVersion" : "2010-09-09",
+    "Description" : "My First EC2 Instance from CF",
+    "Resources" : {
+        "EC2Instance" : {
+            "Type" : "AWS::EC2::Instance",
+            "Properties" : {
+                "InstanceType" : "t2.micro",
+                "ImageId" : "ami-0a39e970b93513779",
+                "KeyName" : "zora-aws-admin-host",
+                "SubnetId" : "subnet-27d8076b"
+                
+            }
+        },
+        "SecurityGroup" : {
+            "Type" : "AWS::EC2::SecurityGroup",
+            "Properties" : {
+                "GroupName" : "My First CF Security Group",
+                "GroupDescription" : "This will allow public SSH from the world!",
+                "SecurityGroupIngress" : [ {
+                    "IpProtocol" : "tcp",
+                    "FromPort" : "22",
+                    "ToPort" : "22",
+                    "CidrIp" : "0.0.0.0/0"
+                } ]
+            }
+        }
+         }
+}

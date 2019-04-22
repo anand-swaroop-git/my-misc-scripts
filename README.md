@@ -1,2 +1,2 @@
-# my-misc-scripts
-This repo contains some misc scripts that come handy for day to day tasks
+# cfts
+A repo for self-built AWS CloudFormation Templates

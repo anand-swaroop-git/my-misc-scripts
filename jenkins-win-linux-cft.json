@@ -1,0 +1,273 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "Template to create a Jenkins instance, a windows instance and a linux instance",
+    "Parameters": {
+        "InstanceTypeParameter": {
+            "Type": "String",
+            "Default": "t2.micro",
+            "AllowedValues": [
+                "t2.micro",
+                "m1.small",
+                "m1.large",
+                "t2.medium"
+            ],
+            "Description": "Enter t2.micro, m1.small, or m1.large. Default is t2.micro."
+        },
+        "VPC": {
+            "Description": "EXISTING VPC id where the instances will be created",
+            "Type": "String",
+            "Default": "vpc-9c1628f8"
+        },
+        "SubnetID": {
+            "Description": "Subnet-id of the subnet where the instances will live",
+            "Type": "String",
+            "Default": "subnet-8c4e6ce8"
+        },
+        "KeyName": {
+            "Description": "Name of an existing EC2 KeyPair to enable SSH access to the instance",
+            "Type": "AWS::EC2::KeyPair::KeyName",
+            "ConstraintDescription": "Must be the name of an existing EC2 KeyPair."
+        }
+    },
+    "Resources": {
+        "JenkinsMaster": {
+            "Type": "AWS::EC2::Instance",
+            "Properties": {
+                "InstanceType": {
+                    "Ref": "InstanceTypeParameter"
+                },
+                "ImageId": "ami-01e24be29428c15b2",
+                "SecurityGroupIds": [
+                    {
+                        "Fn::GetAtt": [
+                            "JenkinsSecurityGroup",
+                            "GroupId"
+                        ]
+                    }
+                ],
+                "KeyName": {
+                    "Ref": "KeyName"
+                },
+                "SubnetId": {"Ref" : "SubnetID"},
+                "UserData": {
+                    "Fn::Base64": {
+                      "Fn::Join": [
+                        "\n",
+                        [
+                          "#!/bin/bash -xe",
+                          "yum install httpd -y",
+                          "yum install tmux -y",
+                          "yum install wget -y",
+                          "yum remove java* -y",
+                          "yum install java-1.8.0-openjdk.x86_64 -y",
+                          "wget -O /etc/yum.repos.d/jenkins.repo http://pkg.jenkins.io/redhat/jenkins.repo",
+                          "rpm --import https://pkg.jenkins.io/redhat/jenkins.io.key",
+                          "yum install jenkins -y",
+                          "chkconfig jenkins on",
+                          "service jenkins start"
+
+                        ]
+                      ]
+                    }
+                  },
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "Jenkins-Master"
+                    }
+                ]
+            }
+        },
+        "JenkinsSecurityGroup": {
+            "Type": "AWS::EC2::SecurityGroup",
+            "Properties": {
+                "GroupName": "JenkinsSG",
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "Jenkins-Master-SG"
+                    }
+                ],
+                "GroupDescription": "Allow access to Jenkins on SSH, 8080 and 80 from everywhere",
+                "VpcId": {
+                    "Ref": "VPC"
+                },
+                "SecurityGroupIngress": [
+                    {
+                        "IpProtocol": "tcp",
+                        "FromPort": "22",
+                        "ToPort": "22",
+                        "CidrIp": "0.0.0.0/0"
+                    },
+                    {
+                        "IpProtocol": "tcp",
+                        "FromPort": "8080",
+                        "ToPort": "8080",
+                        "CidrIp": "0.0.0.0/0"
+                    },
+                    {
+                        "IpProtocol": "tcp",
+                        "FromPort": "80",
+                        "ToPort": "80",
+                        "CidrIp": "0.0.0.0/0"
+                    }
+                ]
+            }
+        },
+        "LinuxServer": {
+            "Type": "AWS::EC2::Instance",
+            "Properties": {
+                "InstanceType": {
+                    "Ref": "InstanceTypeParameter"
+                },
+                "ImageId": "ami-01e24be29428c15b2",
+                "SecurityGroupIds": [
+                    {
+                        "Fn::GetAtt": [
+                            "LinuxSecurityGroup",
+                            "GroupId"
+                        ]
+                    }
+                ],
+                "KeyName": {
+                    "Ref": "KeyName"
+                },
+                "SubnetId": {"Ref" : "SubnetID"},
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "Jenkins-Linux-Target"
+                    }
+                ]
+            }
+        },
+        "LinuxSecurityGroup": {
+            "Type": "AWS::EC2::SecurityGroup",
+            "Properties": {
+                "GroupName": "LinuxSG",
+                "GroupDescription": "This will allow public SSH from the world!",
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "Jenkins-Linux-Target-SG"
+                    }
+                ],
+                "VpcId": {
+                    "Ref": "VPC"
+                },
+                "SecurityGroupIngress": [
+                    {
+                        "IpProtocol": "tcp",
+                        "FromPort": "22",
+                        "ToPort": "22",
+                        "CidrIp": "0.0.0.0/0"
+                    }
+                ]
+            }
+        },
+        "LinuxSecurityGroupIngress": {
+            "Type": "AWS::EC2::SecurityGroupIngress",
+            "Properties": {
+                "GroupId": {
+                    "Ref": "LinuxSecurityGroup"
+                },
+                "IpProtocol": "-1",
+                "SourceSecurityGroupId": {
+                    "Ref": "JenkinsSecurityGroup"
+                }
+            }
+        },
+        "WindowsServer": {
+            "Type": "AWS::EC2::Instance",
+            "Properties": {
+                "InstanceType": {
+                    "Ref": "InstanceTypeParameter"
+                },
+                "ImageId": "ami-02b648fbefc511117",
+                "SecurityGroupIds": [
+                    {
+                        "Fn::GetAtt": [
+                            "WindowsSecurityGroup",
+                            "GroupId"
+                        ]
+                    }
+                ],
+                "KeyName": {
+                    "Ref": "KeyName"
+                },
+                "SubnetId": {"Ref" : "SubnetID"},
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "Jenkins-Windows-Target"
+                    }
+                ]
+            }
+        },
+        "WindowsSecurityGroup": {
+            "Type": "AWS::EC2::SecurityGroup",
+            "Properties": {
+                "GroupName": "WindowsSG",
+                "GroupDescription": "This will allow public SSH from the world!",
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "Jenkins-Windows-Target-SG"
+                    }
+                ],
+                "VpcId": {
+                    "Ref": "VPC"
+                },
+                "SecurityGroupIngress": [
+                    {
+                        "IpProtocol": "tcp",
+                        "FromPort": "3389",
+                        "ToPort": "3389",
+                        "CidrIp": "0.0.0.0/0"
+                    }
+                ]
+            }
+        },
+        "WindowsSecurityGroupIngress": {
+            "Type": "AWS::EC2::SecurityGroupIngress",
+            "Properties": {
+                "GroupId": {
+                    "Ref": "WindowsSecurityGroup"
+                },
+                "IpProtocol": "-1",
+                "SourceSecurityGroupId": {
+                    "Ref": "JenkinsSecurityGroup"
+                }
+            }
+        }
+    },
+    "Outputs": {
+        "JenkinsIP": {
+            "Description": "The Private IP of the Jenkins instance",
+            "Value": {
+                "Fn::GetAtt": [
+                    "JenkinsMaster",
+                    "PrivateIp"
+                ]
+            }
+        },
+        "LinuxIP": {
+            "Description": "The Private IP of the Linux instance",
+            "Value": {
+                "Fn::GetAtt": [
+                    "LinuxServer",
+                    "PrivateIp"
+                ]
+            }
+        },
+        "WindowsIP": {
+            "Description": "The Private IP of the Windows instance",
+            "Value": {
+                "Fn::GetAtt": [
+                    "WindowsServer",
+                    "PrivateIp"
+                ]
+            }
+        }
+    }
+}
